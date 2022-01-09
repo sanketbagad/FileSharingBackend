@@ -34,6 +34,8 @@ interface IFile extends Document{
     secure_url: String,
     format: String,
     sizeInBytes: String,
-    sender: String,
-    receiver: String
+    sender?: String,
+    receiver?: String
 }
+
+export default mongoose.model<IFile>("File", fileSchema);
