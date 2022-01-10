@@ -30,12 +30,12 @@ const fileSchema = new Schema({
 })
 
 interface IFile extends Document{
-    filename: String,
-    secure_url: String,
-    format: String,
-    sizeInBytes: String,
-    sender?: String,
-    receiver?: String
+    filename: string,
+    secure_url: string,
+    format: string,
+    sizeInBytes: string,
+    sender?: string,
+    receiver?: string
 }
 
 export default mongoose.model<IFile>("File", fileSchema);
