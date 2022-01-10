@@ -54,12 +54,26 @@ router.get("/:id", async (req, res) => {
             return res.status(404).json({message: "Nothing"})
         }
 
-        res.status(200).json({
+        return res.status(200).json({
             name: file.filename,
             sizeInBytes: file.sizeInBytes,
             format: file.format,
             id,
         })
+    } catch (error) {
+        return res.status(500).json({message: "Server Error :("})
+    }
+})
+
+router.get("/:id/download", async (req, res) => {
+    try {
+        const id = req.params.id
+        const file = await File.findById(id)
+        if (!file) {
+            return res.status(404).json({message: "Nothing"})
+        }
+
+        
     } catch (error) {
         return res.status(500).json({message: "Server Error :("})
     }
