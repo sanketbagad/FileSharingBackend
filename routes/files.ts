@@ -7,46 +7,65 @@ const router = express.Router();
 
 const storage = multer.diskStorage({});
 
-let upload = multer({ storage });
+let upload = multer({
+  storage,
+});
 
-router.post("/upload", upload.single("MyFile"), async (req, res) => {
+router.post("/upload", upload.single("myFile"), async (req, res) => {
+  try {
+    if (!req.file)
+      return res.status(400).json({ message: "Hey bro! We need the file" });
+
+    let uploadedFile: UploadApiResponse;
     try {
-        if(!req.file) {
-           res.status(400).json({message:"No file uploaded"});
-            console.log(req.file)
-
-            let uploadedFile: UploadApiResponse
-
-            try {
-               uploadedFile =  await cloudinary.uploader.upload(req.file.path, {
-                    folder: "images",
-                    resource_type: "auto"
-                })
-            } catch (error) {
-                console.log(error)
-
-                return res.status(500).json({message: "Error uploading file"})
-            }
-
-            const { originalname } = req.file
-            const {secure_url, bytes, format} = uploadedFile
-        
-            const file = await File.create({
-                filename: originalname,
-                sizeInBytes: bytes,
-                secure_url,
-                format   
-            })
-
-            res.status(201).json({
-                id: file._id,
-                downloadPageLink: `${process.env.API_END_POINT}download/${file.id}`,
-            })
-        }
+      uploadedFile = await cloudinary.uploader.upload(req.file.path, {
+        folder: "sanketsb",
+        resource_type: "auto",
+      });
     } catch (error: any) {
-        console.log(error.message);
-        res.status(500).json({message: "Server Error"});
+      console.log(error.message);
+
+      return res.status(400).json({ message: "Cloudinary Error" });
+    }
+    const { originalname } = req.file;
+    const { secure_url, bytes, format } = uploadedFile;
+
+    const file = await File.create({
+      filename: originalname,
+      sizeInBytes: bytes,
+      secure_url,
+      format,
+    });
+    res.status(200).json({
+      id: file._id,
+      downloadPageLink: `${process.env.API_BASE_ENDPOINT_CLIENT}download/${file._id}`,
+    });
+  } catch (error: any) {
+    console.log(error.message);
+    res.status(500).json({ message: "Server Error :(" });
+  }
+});
+
+router.get("/:id", async (req, res) => {
+    try {
+        const id = req.params.id
+        const file = await File.findById(id)
+        if (!file) {
+            return res.status(404).json({message: "Nothing"})
+        }
+
+        res.status(200).json({
+            name: file.filename,
+            sizeInBytes: file.sizeInBytes,
+            format: file.format,
+            id,
+        })
+    } catch (error) {
+        return res.status(500).json({message: "Server Error :("})
     }
 })
+
+
+
 
 export default router;
